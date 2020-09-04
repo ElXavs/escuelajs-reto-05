@@ -7,7 +7,6 @@ const main = document.querySelector('.Main');
 // if (localStorage.getItem('next_fetch') == null) {
 //   final.innerText('Ya no hay personajes')
 //   main.removeChild($observe);
-// }
 // } else if (localStorage.getItem('next_fetch') == null) {
 //   text = document.createTextNode('Ya no hay personajes');
 //   final.textContent.appendChild(text);
@@ -16,14 +15,14 @@ const main = document.querySelector('.Main');
 
 const getData = api => {
   if (localStorage.getItem('next_fetch') !== null) {
-    api = localStorage.getItem('next_fetch')
+    api = localStorage.getItem('next_fetch');
   }
   fetch(api)
     .then(response => response.json())
     .then(response => {
       const characters = response.results;
-      const next_fetch = response.info.next;
-      localStorage.setItem('next_fetch', next_fetch);
+      const next = response.info.next;
+      localStorage.setItem('next_fetch', next);
       let output = characters.map(character => {
         return `
       <article class="Card">
@@ -36,15 +35,26 @@ const getData = api => {
       newItem.classList.add('Items');
       newItem.innerHTML = output;
       $app.appendChild(newItem);
+      checkFinal(next);
     })
-    .catch(error => console.log(error));
+    .catch(error => {
+      console.log(error)
+    });
 }
 
+const checkFinal = (next) => {
+  if (next === null) {
+    intersectionObserver.disconnect($observe);
+    console.log('Ya no hay personajes');
+    final.innerHTML = ('Ya no hay personajes...')
+  }
+}
 const loadData = async () => {
   try {
+    await iniciate
     await getData(API);
-    console.log('Carga de datos exitosa');
   } catch (error) {
+    checkFinal();
     console.log(error);
   }
 }
@@ -59,6 +69,7 @@ const intersectionObserver = new IntersectionObserver(entries => {
 
 intersectionObserver.observe($observe);
 
-document.addEventListener("DOMContentLoaded", () => {
-  localStorage.removeItem('next_fetch');
+const iniciate = document.addEventListener("DOMContentLoaded", () => {
+  localStorage.clear();
+  localStorage.setItem('next_fetch', API);
 })
